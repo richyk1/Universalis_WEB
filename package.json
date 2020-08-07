@@ -1,0 +1,31 @@
+{
+  "name": "abc",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start:dev": "nodemon dist/server.js",
+    "build:dev": "tsc --watch --preserveWatchOutput",
+    "build:webpack": "webpack",
+    "dev": "concurrently \"npm:build:dev\" \"npm:start:dev\" \"npm:build:webpack\""
+  },
+  "dependencies": {
+    "@types/three": "^0.103.2",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "http-errors": "~1.6.3",
+    "js-to-ts-converter": "^0.16.3",
+    "morgan": "~1.9.1",
+    "pug": "^3.0.0",
+    "webpack": "^4.43.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.7",
+    "concurrently": "^5.2.0",
+    "nodemon": "^2.0.4",
+    "three": "^0.118.3",
+    "ts-loader": "^8.0.1",
+    "typescript": "^3.9.7",
+    "webpack-cli": "^3.3.12"
+  }
+}
