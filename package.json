@@ -3,18 +3,20 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start:dev": "nodemon dist/server.js",
-    "build:dev": "tsc --watch --preserveWatchOutput",
-    "build:webpack": "webpack",
-    "dev": "concurrently \"npm:build:dev\" \"npm:start:dev\" \"npm:build:webpack\""
+    "dev:node": "nodemon dist/server.js",
+    "dev:typescript": "tsc --watch --preserveWatchOutput",
+    "dev:webpack": "webpack",
+    "build:node": "node dist/server.js",
+    "build:typescript": "tsc --preserveWatchOutput",
+    "build:webpack": "webpack --mode=production",
+    "dev": "concurrently \"npm:dev:typescript\" \"npm:dev:webpack\" \"npm:dev:node\"",
+    "build": "concurrently \"npm:build:typescript\" \"npm:build:webpack\" \"npm:build:node\""
   },
   "dependencies": {
-    "@types/three": "^0.103.2",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
-    "js-to-ts-converter": "^0.16.3",
     "morgan": "~1.9.1",
     "pug": "^3.0.0",
     "webpack": "^4.43.0"
