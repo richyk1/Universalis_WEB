@@ -13,7 +13,6 @@
     "build": "concurrently \"npm:build:typescript\" \"npm:build:webpack\" \"npm:build:node\""
   },
   "dependencies": {
-    "@types/dat.gui": "^0.7.5",
     "@types/three": "^0.103.2",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
@@ -24,6 +23,7 @@
     "webpack": "^4.43.0"
   },
   "devDependencies": {
+    "@types/dat.gui": "^0.7.5",
     "@types/express": "^4.17.7",
     "concurrently": "^5.2.0",
     "nodemon": "^2.0.4",
