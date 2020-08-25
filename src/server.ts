@@ -7,6 +7,7 @@
 var app = require('./app');
 var debug = require('debug')('abc:server');
 var http = require('http');
+import * as socketioHandlers from "./socketio";
 
 /**
  * Get port from environment and store in Express.
@@ -20,12 +21,24 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
+server.listen(port);
+
+/**
+ * Create Socket.io server.
+ */
+
+var sio = require('socket.io')(server);
+sio.sockets.on('connection', function (socket: SocketIOClient.Socket) {
+  console.log("Client connected to server.");
+  
+  socketioHandlers.ContinentHandler(socket);
+});
+
 
 /**
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 
