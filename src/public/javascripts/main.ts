@@ -4,6 +4,7 @@ import Stats from 'three/examples/jsm/libs/stats.module'
 import { GUI } from "three/examples/jsm/libs/dat.gui.module";
 import * as Tiles from "./tiles";
 import * as io from 'socket.io-client'
+import { response } from 'express';
 
 const socket = io.connect("http://localhost:3000");
 const scene: THREE.Scene = new THREE.Scene()
@@ -59,7 +60,14 @@ function Main() {
   const tiles: Tiles.Tile[] = Tiles.GetTiles(socket)
   const test: Tiles.Tile[] = []
   for (var i = 0; i < 10; i++)
-    test.push(tiles[i])
+    test.push(tiles[i]);
+
+  socket.emit("find_continent", tiles, (responseData: Tiles.Tile[]) => {
+   
+    DrawShapes(responseData.filter((tile: Tiles.Tile) => tile.continent));
+  });
+
+
 
 
   // Graphical User Interface for value tweaking
@@ -108,7 +116,7 @@ function DrawShapes(tiles: Tiles.Tile[]) {
 }
 
 function DrawMap(): THREE.Mesh {
-  const planeGeometry: THREE.PlaneGeometry = new THREE.PlaneGeometry(5632, 2048, 1,)
+  const planeGeometry: THREE.PlaneGeometry = new THREE.PlaneGeometry(5632, 2048)
 
   const material: THREE.MeshPhongMaterial = new THREE.MeshPhongMaterial()
 
@@ -122,14 +130,14 @@ function DrawMap(): THREE.Mesh {
   const displacementMap = new THREE.TextureLoader().load("images/heightmap.bmp")
   material.displacementMap = displacementMap
   const plane: THREE.Mesh = new THREE.Mesh(planeGeometry, material);
+  plane.translateZ(-5)
 
   return plane;
 }
 
 // Rendering
 function Render(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera, gui: GUI, stats: Stats) {
-  requestAnimationFrame(() => 
-  {
+  requestAnimationFrame(() => {
     Render(renderer, camera, gui, stats);
   });
 

@@ -4,7 +4,8 @@ import { tiles } from "./tiles.json";
 export interface Tile {
   readonly name: string,
   readonly borders: Border[],
-  readonly continent?: string,
+  continent?: string,
+  color?: [number, number, number],
 }
 
 export interface Border {
@@ -29,28 +30,11 @@ export function GetTiles(socket: SocketIOClient.Socket): Tile[] {
         tileBorders.push({points: borderPoints});
       }
 
-      socket.emit("find_continent", tiles[tileIndex]["name"]);
-
-      var continent: string = "";
-      socket.on("found_continent", (result: any) => 
-      {
-        console.log("got this from server:", continent);
-        continent = result.message;
-      });
-      
-      
-      if(continent.length > 0)
-        var tile: Tile = {
-          name: tiles[tileIndex]["name"],
-          borders: tileBorders,
-          continent: continent
-        }
-      else
-        var tile: Tile = {
-          name: tiles[tileIndex]["name"],
-          borders: tileBorders,
-        }
-        
+      var tile: Tile = {
+        name: tiles[tileIndex]["name"],
+        borders: tileBorders,
+      }
+   
       tilesGrouped.push(tile)
     }
   }
