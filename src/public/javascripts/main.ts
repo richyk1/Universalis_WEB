@@ -4,7 +4,7 @@ import Stats from 'three/examples/jsm/libs/stats.module'
 import { GUI } from "three/examples/jsm/libs/dat.gui.module";
 import * as Tiles from "./tiles";
 import * as io from 'socket.io-client'
-import { Vector3, Group } from 'three';
+import { Vector3, Group, Box3 } from 'three';
 
 const socket = io.connect("http://localhost:3000");
 const scene: THREE.Scene = new THREE.Scene()
@@ -24,6 +24,8 @@ const gui = new GUI()
 // Two grops that hold identical maps for infinite looping
 var currentMapGroup: THREE.Group = new THREE.Group();
 var nextMapGroup: THREE.Group = new THREE.Group();
+
+var planeInBox: THREE.Box3 = new THREE.Box3();
 
 function Main() {
     /*
@@ -57,6 +59,7 @@ function Main() {
     const stats = Stats()
     document.body.appendChild(stats.dom)
 
+  
     // Event handling
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight
@@ -86,7 +89,7 @@ function Main() {
     cameraFolder.open()
 
     // Start rendering
-    Render(renderer, camera, gui, stats);
+    Render(renderer, camera, controls, gui, stats);
 }
 
 
@@ -178,15 +181,34 @@ function DrawMap(): THREE.Mesh {
 
 var startTile: number = 0;
 // Rendering
-function Render(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera, gui: GUI, stats: Stats) {
+function Render(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera, controls: MapControls, gui: GUI, stats: Stats) {
     requestAnimationFrame(() => {
-        Render(renderer, camera, gui, stats);
+        Render(renderer, camera, controls, gui, stats);
     });
-    
     
 
     const cameraWorldPosition = new THREE.Vector3();
     camera.getWorldPosition(cameraWorldPosition);
+
+    const boxPlane = new THREE.Box3().setFromObject(currentMapGroup);
+
+    var min_x = cameraWorldPosition.x - 5632 / 2 - boxPlane.min.x;
+    var max_x = cameraWorldPosition.x + 5632 / 2 - boxPlane.max.x;
+    var min_y = cameraWorldPosition.y - 2048 / 2 - boxPlane.min.y;
+    var max_y = cameraWorldPosition.y + 2048 / 2 - boxPlane.max.y;
+
+    let pos_x =  Math.min(max_x, Math.max(min_x, camera.position.x));
+    let pos_y =  Math.min(max_y, Math.max(min_y, camera.position.y));
+    
+    camera.position.set(pos_x, pos_y, camera.position.z);
+    camera.lookAt(pos_x, pos_y, 0);
+
+
+    controls.target.x = pos_x;
+    controls.target.y = pos_y;
+    controls.update();
+
+
 
     currentMapGroup.position.setY(0);
     if(cameraWorldPosition.y > 2200/2)
