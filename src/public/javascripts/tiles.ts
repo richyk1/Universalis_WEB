@@ -2,7 +2,8 @@
 import { tiles } from "./tiles.json";
 import * as THREE from 'three';
 
-export interface Tile {
+export interface Tile
+{
     readonly name: string,
     readonly tileId: number,
     readonly borders: Border[],

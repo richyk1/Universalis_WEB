@@ -9,6 +9,7 @@ module.exports = {
         test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: /node_modules/,
+        
       },
     ],
   },
@@ -18,6 +19,7 @@ module.exports = {
   },
   output: {
     filename: 'bundle.js',
+    chunkFilename: 'chunk.bundle.js',
     path: path.resolve(__dirname, 'dist/public/javascripts'),
   },
   watch: true,

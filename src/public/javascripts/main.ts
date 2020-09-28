@@ -4,7 +4,6 @@ import Stats from 'three/examples/jsm/libs/stats.module'
 import { GUI } from "three/examples/jsm/libs/dat.gui.module";
 import * as Tiles from "./tiles";
 import * as io from 'socket.io-client'
-import { Vector3, Group, Box3 } from 'three';
 
 const socket = io.connect("http://localhost:3000");
 const scene: THREE.Scene = new THREE.Scene()
@@ -21,12 +20,6 @@ window.THREE = THREE;
 // Graphical User Interface for value tweaking
 const gui = new GUI()
 
-// Two grops that hold identical maps for infinite looping
-var currentMapGroup: THREE.Group = new THREE.Group();
-var nextMapGroup: THREE.Group = new THREE.Group();
-
-var planeInBox: THREE.Box3 = new THREE.Box3();
-
 function Main() {
     /*
     A light that gets emitted from a single point in all directions. 
@@ -36,6 +29,7 @@ function Main() {
     light.position.set(0, 0, 1000);
     scene.add(light);
     scene.background = new THREE.Color("black")
+
 
     // Setting up camera
     const camera: THREE.PerspectiveCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
@@ -48,6 +42,7 @@ function Main() {
     renderer.setSize(window.innerWidth, window.innerHeight)
     document.body.appendChild(renderer.domElement)
 
+
     // Setting up controls
     const controls = new MapControls(camera, renderer.domElement)
     controls.enableRotate = false
@@ -55,26 +50,27 @@ function Main() {
     controls.minDistance = 50
     controls.maxDistance = 1000
 
+
     //Setting up live stats
     const stats = Stats()
     document.body.appendChild(stats.dom)
 
-  
+
     // Event handling
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight
         camera.updateProjectionMatrix()
     }, undefined)
 
-
     // Loading map
     const tiles: Tiles.Tile[] = Tiles.GetTiles(socket)
     const test: Tiles.Tile[] = []
     for (var i = 0; i < 10; i++)
         test.push(tiles[i]);
+    scene.add(DrawMap());
 
-    socket.emit("find_continent", tiles, (responseData: Tiles.Tile[]) => {
-
+    socket.emit("find_continent", test, (responseData: Tiles.Tile[]) => {
+        
         DrawShapes(responseData.filter((tile: Tiles.Tile) => tile.continent));
     });
 
@@ -94,16 +90,10 @@ function Main() {
 
 
 function DrawShapes(tiles: Tiles.Tile[]) {
-    const map: THREE.Mesh = DrawMap();
     const tilesGrouped: THREE.Group = new THREE.Group();
 
     for (const tile of tiles) {
         var tileGroup: THREE.Group = new THREE.Group();
-
-        if (tile.name === "Sabha") {
-            console.log("derp");
-
-        }
 
         const tileColor: THREE.Color = (tile.color ? new THREE.Color(tile.color) : new THREE.Color())
 
@@ -143,28 +133,26 @@ function DrawShapes(tiles: Tiles.Tile[]) {
             if (textMesh) {
 
                 textMesh.position.set(center.x, center.y, 2); // move geometry up and out
+                textMesh.name = "DisplayText";
+                textMesh.visible = false;
                 tileGroup.add(textMesh);
             }
         }
 
         tileGroup.visible = true;
+        tileGroup.name = tile.name;
         tileGroup.translateZ(1);
 
-        tilesGrouped.add(tileGroup)
+        tilesGrouped.add(tileGroup);
     }
 
-    currentMapGroup.add(map);
-    currentMapGroup.add(tilesGrouped);
- 
-    scene.add(currentMapGroup);
+    scene.add(tilesGrouped);
 }
 
 function DrawMap(): THREE.Mesh {
     const planeGeometry: THREE.PlaneGeometry = new THREE.PlaneGeometry(5632, 2048)
-
     const material: THREE.MeshPhongMaterial = new THREE.MeshPhongMaterial()
-
-    const texture = new THREE.TextureLoader().load("images/colormap_water.bmp")
+    const texture = new THREE.TextureLoader().load("images/terrain.bmp")
     material.map = texture
 
     const normalTexture = new THREE.TextureLoader().load("images/world_normal.bmp")
@@ -173,24 +161,23 @@ function DrawMap(): THREE.Mesh {
     const displacementMap = new THREE.TextureLoader().load("images/heightmap.bmp")
     material.displacementMap = displacementMap
 
-
     const plane: THREE.Mesh = new THREE.Mesh(planeGeometry, material);
 
     return plane;
 }
 
-var startTile: number = 0;
-// Rendering
+
+const cameraWorldPosition = new THREE.Vector3();
+var boxPlane: THREE.Box3 = new THREE.Box3().setFromObject(scene);
+
 function Render(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera, controls: MapControls, gui: GUI, stats: Stats) {
     requestAnimationFrame(() => {
         Render(renderer, camera, controls, gui, stats);
     });
     
-
-    const cameraWorldPosition = new THREE.Vector3();
     camera.getWorldPosition(cameraWorldPosition);
 
-    const boxPlane = new THREE.Box3().setFromObject(currentMapGroup);
+    if(!boxPlane) boxPlane = new THREE.Box3().setFromObject(scene);
 
     var min_x = cameraWorldPosition.x - 5632 / 2 - boxPlane.min.x;
     var max_x = cameraWorldPosition.x + 5632 / 2 - boxPlane.max.x;
@@ -209,14 +196,14 @@ function Render(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera, 
     controls.update();
 
 
-
-    currentMapGroup.position.setY(0);
+    scene.position.setY(0);
     if(cameraWorldPosition.y > 2200/2)
         camera.position.setY(2200/2);
     if(cameraWorldPosition.y < -2200/2)
     camera.position.setY(-2200/2);
  
 
+    /*
     const currentMapGroupPosition = new THREE.Vector3();
     currentMapGroup.getWorldPosition(currentMapGroupPosition);
 
@@ -258,6 +245,7 @@ function Render(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera, 
         }
     }
 
+    */
 
     renderer.render(scene, camera);
 
@@ -265,6 +253,9 @@ function Render(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera, 
     stats.update();
 };
 
-
-
 Main();
+
+class MyCamera extends THREE.PerspectiveCamera
+{
+
+}
